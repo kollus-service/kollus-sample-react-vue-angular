@@ -1,0 +1,18 @@
+<div>
+  <input type="file" [disabled]="isUploading" (change)="onFileChange($event)" />
+  <button type="button" [disabled]="!selectedFile || isUploading" (click)="onUpload()">
+    업로드
+  </button>
+
+  @if (isUploading || isDone) {
+    <div class="progress-bar">
+      <div [style.width.%]="progress"></div>
+    </div>
+  }
+  @if (isDone) {
+    <p>업로드 완료 ({{ progress }}%)</p>
+  }
+  @if (error) {
+    <p class="error-text">{{ error }}</p>
+  }
+</div>

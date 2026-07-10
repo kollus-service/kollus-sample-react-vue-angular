@@ -1,0 +1,19 @@
+@if (error) {
+  <p class="error-text">{{ error }}</p>
+} @else if (!playerUrl) {
+  <p>플레이어를 불러오는 중...</p>
+} @else {
+  <div>
+    <iframe
+      #playerIframe
+      [src]="playerUrl"
+      width="640"
+      height="360"
+      frameborder="0"
+      allowfullscreen
+      title="Kollus Player"
+      (load)="onIframeLoad()"
+    ></iframe>
+    <p>재생 상태: <code>{{ playerStatus }}</code></p>
+  </div>
+}

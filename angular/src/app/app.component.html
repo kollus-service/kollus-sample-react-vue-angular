@@ -1,0 +1,18 @@
+<section>
+  <h1>Kollus Sample (Angular)</h1>
+</section>
+
+<section>
+  <h2>플레이어 임베드</h2>
+  <input type="text" placeholder="미디어 콘텐츠 키(mckey) 입력" [(ngModel)]="mediaContentKey" />
+  @if (mediaContentKey) {
+    <app-kollus-player [mediaContentKey]="mediaContentKey" />
+  } @else {
+    <p>미디어 콘텐츠 키를 입력하면 플레이어가 표시됩니다.</p>
+  }
+</section>
+
+<section>
+  <h2>파일 업로드</h2>
+  <app-file-uploader />
+</section>
