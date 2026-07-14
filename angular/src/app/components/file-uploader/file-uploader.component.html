@@ -1,6 +1,20 @@
 <div>
+  <p class="hint-text">
+    API 접근 토큰은 브라우저 메모리에서만 사용되며 저장되지 않습니다(새로고침 시 사라짐).
+  </p>
+  <div class="field-group">
+    <label>
+      API 접근 토큰 (access_token)
+      <input type="password" [(ngModel)]="accessToken" autocomplete="off" [disabled]="isUploading" />
+    </label>
+  </div>
+
   <input type="file" [disabled]="isUploading" (change)="onFileChange($event)" />
-  <button type="button" [disabled]="!selectedFile || isUploading" (click)="onUpload()">
+  <button
+    type="button"
+    [disabled]="!selectedFile || !accessToken || isUploading"
+    (click)="onUpload()"
+  >
     업로드
   </button>
 

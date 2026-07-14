@@ -1,8 +1,13 @@
 <script setup>
+// Kollus 플레이어 임베드 컴포넌트. 브라우저에서 직접 서명한 JWT로 S링크 URL을 구성해
+// iframe으로 재생하고, VG Controller SDK를 통해 재생 상태 이벤트를 수신한다.
 import { ref, watch } from 'vue'
-import { fetchPlayerToken } from '../api/playerApi'
+import { createPlayerJwt } from '../utils/kollusJwt'
 
 const props = defineProps({
+  secretKey: { type: String, required: true },
+  customKey: { type: String, required: true },
+  cuid: { type: String, required: true },
   mediaContentKey: { type: String, required: true },
 })
 
@@ -38,17 +43,20 @@ const playerUrl = ref(null)
 const error = ref(null)
 const playerStatus = ref('idle')
 
-async function loadPlayerUrl(mediaContentKey) {
+async function buildPlayerUrl() {
   playerUrl.value = null
   error.value = null
 
   try {
-    // Kollus API: POST /jwt/create - 재생용 JWT + 사용자 키(custom_key) 발급
-    const { jwt, customKey } = await fetchPlayerToken(mediaContentKey)
-    playerUrl.value = `${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${customKey}`
+    const jwt = await createPlayerJwt({
+      secretKey: props.secretKey,
+      cuid: props.cuid,
+      mediaContentKey: props.mediaContentKey,
+    })
+    playerUrl.value = `${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${encodeURIComponent(props.customKey)}`
   } catch (err) {
-    // JWT 발급 실패: 사용자에게 에러 상태 표시 후 재시도 유도
-    console.error('[Kollus] 토큰 발급 실패:', err.message)
+    // JWT 서명 실패: 사용자에게 에러 상태 표시 후 재시도 유도
+    console.error('[Kollus] JWT 생성 실패:', err.message)
     error.value = '플레이어를 불러올 수 없습니다.'
   }
 }
@@ -69,7 +77,11 @@ async function handleIframeLoad() {
   }
 }
 
-watch(() => props.mediaContentKey, loadPlayerUrl, { immediate: true })
+watch(
+  () => [props.secretKey, props.customKey, props.cuid, props.mediaContentKey],
+  buildPlayerUrl,
+  { immediate: true },
+)
 </script>
 
 <template>

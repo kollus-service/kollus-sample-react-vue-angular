@@ -4,11 +4,39 @@
 
 <section>
   <h2>플레이어 임베드</h2>
-  <input type="text" placeholder="미디어 콘텐츠 키(mckey) 입력" [(ngModel)]="mediaContentKey" />
-  @if (mediaContentKey) {
-    <app-kollus-player [mediaContentKey]="mediaContentKey" />
+  <p class="hint-text">
+    아래 값은 브라우저 메모리에서만 사용되며 저장되지 않습니다(새로고침 시 사라짐).
+  </p>
+  <div class="field-group">
+    <label>
+      보안 키 (Secret Key)
+      <input type="password" [(ngModel)]="secretKey" autocomplete="off" />
+    </label>
+    <label>
+      사용자 키 (custom_key)
+      <input type="text" [(ngModel)]="customKey" autocomplete="off" />
+    </label>
+    <label>
+      시청자 ID (cuid)
+      <input type="text" [(ngModel)]="cuid" autocomplete="off" />
+    </label>
+    <label>
+      미디어 콘텐츠 키 (mckey)
+      <input type="text" [(ngModel)]="mediaContentKey" autocomplete="off" />
+    </label>
+  </div>
+  <button type="button" [disabled]="!canLoadPlayer" (click)="onLoadPlayer()">
+    플레이어 불러오기
+  </button>
+  @if (appliedConfig) {
+    <app-kollus-player
+      [secretKey]="appliedConfig.secretKey"
+      [customKey]="appliedConfig.customKey"
+      [cuid]="appliedConfig.cuid"
+      [mediaContentKey]="appliedConfig.mediaContentKey"
+    />
   } @else {
-    <p>미디어 콘텐츠 키를 입력하면 플레이어가 표시됩니다.</p>
+    <p>모든 값을 입력한 뒤 [플레이어 불러오기]를 클릭하면 플레이어가 표시됩니다.</p>
   }
 </section>
 

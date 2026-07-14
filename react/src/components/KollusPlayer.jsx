@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { fetchPlayerToken } from '../api/playerApi'
+import { createPlayerJwt } from '../utils/kollusJwt'
 
 const VG_CONTROLLER_SCRIPT_URL =
   'https://file.kollus.com/vgcontroller/vg-controller-client.latest.min.js'
@@ -30,10 +30,11 @@ function loadVgControllerScript() {
 
 /**
  * Kollus 플레이어 임베드 컴포넌트.
- * 백엔드에서 JWT를 발급받아 S링크 URL을 구성해 iframe으로 재생하고,
+ * 브라우저에서 직접 서명한 JWT로 S링크 URL을 구성해 iframe으로 재생하고,
  * VG Controller SDK를 통해 재생 상태 이벤트를 수신한다.
+ * 보안 키(secretKey)는 상위에서 폼 입력값으로만 전달받으며 저장하지 않는다.
  */
-function KollusPlayer({ mediaContentKey }) {
+function KollusPlayer({ secretKey, customKey, cuid, mediaContentKey }) {
   const iframeRef = useRef(null)
   const [playerUrl, setPlayerUrl] = useState(null)
   const [error, setError] = useState(null)
@@ -42,24 +43,25 @@ function KollusPlayer({ mediaContentKey }) {
   useEffect(() => {
     let isCancelled = false
 
-    async function loadPlayerUrl() {
+    async function buildPlayerUrl() {
+      setPlayerUrl(null)
+      setError(null)
       try {
-        // Kollus API: POST /jwt/create - 재생용 JWT + 사용자 키(custom_key) 발급
-        const { jwt, customKey } = await fetchPlayerToken(mediaContentKey)
+        const jwt = await createPlayerJwt({ secretKey, cuid, mediaContentKey })
         if (isCancelled) return
-        setPlayerUrl(`${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${customKey}`)
+        setPlayerUrl(`${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${encodeURIComponent(customKey)}`)
       } catch (err) {
-        // JWT 발급 실패: 사용자에게 에러 상태 표시 후 재시도 유도
-        console.error('[Kollus] 토큰 발급 실패:', err.message)
+        // JWT 서명 실패: 사용자에게 에러 상태 표시 후 재시도 유도
+        console.error('[Kollus] JWT 생성 실패:', err.message)
         if (!isCancelled) setError('플레이어를 불러올 수 없습니다.')
       }
     }
 
-    loadPlayerUrl()
+    buildPlayerUrl()
     return () => {
       isCancelled = true
     }
-  }, [mediaContentKey])
+  }, [secretKey, customKey, cuid, mediaContentKey])
 
   useEffect(() => {
     if (!playerUrl) return

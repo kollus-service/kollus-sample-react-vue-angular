@@ -1,6 +1,6 @@
 import { Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
-import { KollusApiService } from '../../services/kollus-api.service';
+import { createPlayerJwt } from '../../utils/kollus-jwt';
 
 declare global {
   interface Window {
@@ -39,8 +39,9 @@ function loadVgControllerScript(): Promise<Window['VgControllerClient']> {
 
 /**
  * Kollus 플레이어 임베드 컴포넌트.
- * 백엔드에서 JWT를 발급받아 S링크 URL을 구성해 iframe으로 재생하고,
+ * 브라우저에서 직접 서명한 JWT로 S링크 URL을 구성해 iframe으로 재생하고,
  * VG Controller SDK를 통해 재생 상태 이벤트를 수신한다.
+ * 보안 키(secretKey)는 상위에서 폼 입력값으로만 전달받으며 저장하지 않는다.
  */
 @Component({
   selector: 'app-kollus-player',
@@ -48,6 +49,9 @@ function loadVgControllerScript(): Promise<Window['VgControllerClient']> {
   templateUrl: './kollus-player.component.html',
 })
 export class KollusPlayerComponent implements OnChanges {
+  @Input({ required: true }) secretKey!: string;
+  @Input({ required: true }) customKey!: string;
+  @Input({ required: true }) cuid!: string;
   @Input({ required: true }) mediaContentKey!: string;
   @ViewChild('playerIframe') iframeRef?: ElementRef<HTMLIFrameElement>;
 
@@ -55,31 +59,29 @@ export class KollusPlayerComponent implements OnChanges {
   error: string | null = null;
   playerStatus = 'idle';
 
-  constructor(
-    private readonly kollusApi: KollusApiService,
-    private readonly sanitizer: DomSanitizer,
-  ) {}
+  constructor(private readonly sanitizer: DomSanitizer) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    if (changes['mediaContentKey']) {
-      this.loadPlayerUrl();
-    }
+  ngOnChanges(): void {
+    this.buildPlayerUrl();
   }
 
-  private async loadPlayerUrl(): Promise<void> {
+  private async buildPlayerUrl(): Promise<void> {
     this.playerUrl = null;
     this.error = null;
 
     try {
-      // Kollus API: POST /jwt/create - 재생용 JWT + 사용자 키(custom_key) 발급
-      const { jwt, customKey } = await this.kollusApi.fetchPlayerToken(this.mediaContentKey);
-      // 신뢰 가능한 백엔드가 발급한 URL이므로 iframe 임베드를 위해 sanitizer 우회 처리
+      const jwt = await createPlayerJwt({
+        secretKey: this.secretKey,
+        cuid: this.cuid,
+        mediaContentKey: this.mediaContentKey,
+      });
+      // 신뢰 가능한 값으로 직접 구성한 URL이므로 iframe 임베드를 위해 sanitizer 우회 처리
       this.playerUrl = this.sanitizer.bypassSecurityTrustResourceUrl(
-        `${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${customKey}`,
+        `${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${encodeURIComponent(this.customKey)}`,
       );
     } catch (err) {
-      // JWT 발급 실패: 사용자에게 에러 상태 표시 후 재시도 유도
-      console.error('[Kollus] 토큰 발급 실패:', (err as Error).message);
+      // JWT 서명 실패: 사용자에게 에러 상태 표시 후 재시도 유도
+      console.error('[Kollus] JWT 생성 실패:', (err as Error).message);
       this.error = '플레이어를 불러올 수 없습니다.';
     }
   }

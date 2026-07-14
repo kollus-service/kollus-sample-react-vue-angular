@@ -1,124 +1,83 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
-import { environment } from '../../environments/environment';
-import {
-  mockCreateUploadUrl,
-  mockFetchPlayerToken,
-  mockFetchUploadProgress,
-  mockUploadFile,
-} from './kollus-mock-api';
-
-interface PlayerTokenResponse {
-  jwt: string;
-  custom_key: string;
-}
 
 interface UploadUrlResponse {
   data: {
     upload_url: string;
     upload_file_key: string;
+    progress_url: string;
   };
 }
 
 interface UploadProgressResponse {
-  data: {
+  data?: {
     percent: number;
   };
+  percent?: number;
 }
 
+// Kollus VOD REST API (KR region). 원래는 서버 사이드 호출용 API이지만,
+// 브라우저에서 직접 호출해도 CORS로 차단되지 않는 것을 확인했다.
+const VOD_API_BASE_URL = 'https://c-api-kr.kollus.com/api';
+
 /**
- * Kollus 백엔드 프록시(JWT 발급, 업로드 URL 발급, 업로드 진행률 조회)를 호출하는 서비스.
+ * Kollus VOD API(업로드 URL 발급, 업로드 진행률 조회)를 직접 호출하는 서비스.
  */
 @Injectable({ providedIn: 'root' })
 export class KollusApiService {
   constructor(private readonly http: HttpClient) {}
 
   /**
-   * Kollus 플레이어 재생용 JWT를 백엔드에서 발급받는다.
-   * @param mediaContentKey 재생할 콘텐츠의 미디어 콘텐츠 키(mckey)
+   * Kollus VOD API를 직접 호출해 업로드 URL을 발급받는다.
+   * API 접근 토큰(accessToken)은 인자로만 받아 저장하지 않는다.
+   * @param fileName 업로드할 파일명(콘텐츠 제목으로 사용)
+   * @param accessToken Kollus API 접근 토큰
    */
-  async fetchPlayerToken(mediaContentKey: string): Promise<{ jwt: string; customKey: string }> {
-    if (environment.useMockApi) {
-      return mockFetchPlayerToken();
-    }
-
+  async createUploadUrl(
+    fileName: string,
+    accessToken: string,
+  ): Promise<{ uploadUrl: string; uploadFileKey: string; progressUrl: string }> {
+    const body = new URLSearchParams({ title: fileName });
     const response = await firstValueFrom(
-      this.http.post<PlayerTokenResponse>(`${environment.apiBaseUrl}/jwt/create`, {
-        media_content_key: mediaContentKey,
-      }),
-    );
-    return { jwt: response.jwt, customKey: response.custom_key };
-  }
-
-  /**
-   * 백엔드 프록시를 통해 Kollus 업로드 URL을 발급받는다.
-   * @param fileName 업로드할 파일명
-   */
-  async createUploadUrl(fileName: string): Promise<{ uploadUrl: string; uploadFileKey: string }> {
-    if (environment.useMockApi) {
-      return mockCreateUploadUrl();
-    }
-
-    const response = await firstValueFrom(
-      this.http.post<UploadUrlResponse>(`${environment.apiBaseUrl}/api/upload/create-url`, {
-        file_name: fileName,
-      }),
-    );
-    return { uploadUrl: response.data.upload_url, uploadFileKey: response.data.upload_file_key };
-  }
-
-  /**
-   * 파일을 Kollus 업로드 서버에 XHR로 직접 전송한다. 필드명은 반드시 'upload-file'.
-   * @param uploadUrl createUploadUrl로 발급받은 업로드 서버 URL
-   * @param file 업로드할 파일
-   * @param onProgress 업로드 진행률 콜백 (0~100)
-   */
-  uploadFile(uploadUrl: string, file: File, onProgress: (percent: number) => void): Promise<void> {
-    if (environment.useMockApi) {
-      return mockUploadFile(onProgress);
-    }
-
-    return new Promise((resolve, reject) => {
-      const formData = new FormData();
-      formData.append('upload-file', file);
-
-      const xhr = new XMLHttpRequest();
-      xhr.open('POST', uploadUrl);
-
-      xhr.upload.addEventListener('progress', (event) => {
-        if (event.lengthComputable) {
-          onProgress(Math.round((event.loaded / event.total) * 100));
-        }
-      });
-
-      xhr.addEventListener('load', () => {
-        if (xhr.status >= 200 && xhr.status < 300) {
-          resolve();
-        } else {
-          reject(new Error(`업로드 실패 (status: ${xhr.status})`));
-        }
-      });
-      xhr.addEventListener('error', () => reject(new Error('업로드 중 네트워크 오류가 발생했습니다.')));
-
-      xhr.send(formData);
-    });
-  }
-
-  /**
-   * 백엔드 프록시를 통해 업로드 진행률을 조회한다.
-   * @param uploadFileKey createUploadUrl로 발급받은 업로드 파일 키
-   */
-  async fetchUploadProgress(uploadFileKey: string): Promise<number> {
-    if (environment.useMockApi) {
-      return mockFetchUploadProgress();
-    }
-
-    const response = await firstValueFrom(
-      this.http.get<UploadProgressResponse>(
-        `${environment.apiBaseUrl}/api/upload/progress/${uploadFileKey}`,
+      this.http.post<UploadUrlResponse>(
+        `${VOD_API_BASE_URL}/upload/create-url?access_token=${encodeURIComponent(accessToken)}`,
+        body.toString(),
+        { headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
       ),
     );
-    return response.data.percent;
+    return {
+      uploadUrl: response.data.upload_url,
+      uploadFileKey: response.data.upload_file_key,
+      progressUrl: response.data.progress_url,
+    };
+  }
+
+  /**
+   * 파일을 Kollus 업로드 서버에 직접 전송한다. 필드명은 반드시 'upload-file'.
+   * XHR/HttpClient에 upload progress 리포팅을 붙이면 CORS preflight가 강제되어 Kollus 업로드
+   * 서버가 거부하므로, preflight가 없는 단순 fetch POST로 전송하고 진행률은 progress_url 폴링으로 표시한다.
+   * @param uploadUrl createUploadUrl로 발급받은 업로드 서버 URL
+   * @param file 업로드할 파일
+   */
+  async uploadFile(uploadUrl: string, file: File): Promise<void> {
+    const formData = new FormData();
+    formData.append('upload-file', file);
+
+    const response = await fetch(uploadUrl, { method: 'POST', body: formData });
+
+    if (!response.ok) {
+      throw new Error(`업로드 실패 (status: ${response.status})`);
+    }
+  }
+
+  /**
+   * createUploadUrl 응답의 progress_url을 그대로 호출해 업로드 진행률을 조회한다.
+   * Kollus 진행률 응답의 정확한 필드 스펙이 공개 문서에 없어 방어적으로 파싱한다.
+   * @param progressUrl createUploadUrl로 발급받은 진행률 조회 URL
+   */
+  async fetchUploadProgress(progressUrl: string): Promise<number> {
+    const response = await firstValueFrom(this.http.get<UploadProgressResponse>(progressUrl));
+    return response.data?.percent ?? response.percent ?? 0;
   }
 }
