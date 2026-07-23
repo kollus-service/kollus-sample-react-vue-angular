@@ -38,4 +38,4 @@ npm run build    # (= ng build)
 ## 관련 문서
 
 - [Kollus 개발자 문서](https://docs.kollus.com)
-- [루트 README](../README.md) — 전체 개요, 기능 설명, 알려진 한계
+- [루트 README](../README.md) — 전체 개요, 기능 설명, 주의사항
