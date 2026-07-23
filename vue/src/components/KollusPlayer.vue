@@ -94,6 +94,7 @@ watch(
       width="640"
       height="360"
       frameborder="0"
+      allow="encrypted-media; autoplay"
       allowfullscreen
       title="Kollus Player"
       @load="handleIframeLoad"

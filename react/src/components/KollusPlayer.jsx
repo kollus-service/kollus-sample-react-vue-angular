@@ -109,6 +109,7 @@ function KollusPlayer({ secretKey, customKey, cuid, mediaContentKey }) {
         width="640"
         height="360"
         frameBorder="0"
+        allow="encrypted-media; autoplay"
         allowFullScreen
         title="Kollus Player"
       />
