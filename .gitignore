@@ -3,6 +3,10 @@
 .vscode/
 .DS_Store
 
+# AI 도구 로컬 설정
+CLAUDE.md
+.claude/
+
 # 의존성 / 빌드 결과물 (각 프로젝트에 개별 .gitignore 있음)
 node_modules/
 dist/
