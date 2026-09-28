@@ -1,3 +1,4 @@
+// 파일 선택 → Kollus 업로드 URL 발급 → 직접 전송 → 진행률 폴링을 담당하는 업로드 컴포넌트.
 import { useRef, useState } from 'react'
 import { createUploadUrl, fetchUploadProgress, uploadFile } from '../api/uploadApi'
 

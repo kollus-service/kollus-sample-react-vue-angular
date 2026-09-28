@@ -1,5 +1,7 @@
 // Kollus 재생용 JWT(HS256)를 Web Crypto API로 브라우저에서 직접 서명하는 유틸.
 const JWT_HEADER = { alg: 'HS256', typ: 'JWT' };
+// JWT 기본 만료 시간(초): 1시간
+const DEFAULT_JWT_EXPIRES_IN_SECONDS = 3600;
 
 function base64UrlEncodeBytes(bytes: Uint8Array): string {
   let binary = '';
@@ -25,12 +27,18 @@ interface CreatePlayerJwtParams {
  * 보안 키는 인자로만 받아 그 자리에서 서명에 사용할 뿐, 어디에도 저장하지 않는다.
  * 샘플/테스트 용도로 설계된 방식이며, 보안 키를 클라이언트에 두는 것은
  * 실제 서비스에서는 권장되지 않는다(Kollus 공식 가이드도 서버 사이드 발급을 권장).
+ * @param params JWT 생성 파라미터
+ * @param params.secretKey Kollus 보안 키 (서명용, 저장하지 않음)
+ * @param params.cuid 시청자 ID
+ * @param params.mediaContentKey 미디어 콘텐츠 키(mckey)
+ * @param params.expiresInSeconds 만료까지 남은 초 (기본 DEFAULT_JWT_EXPIRES_IN_SECONDS = 1시간)
+ * @returns 서명된 JWT 문자열
  */
 export async function createPlayerJwt({
   secretKey,
   cuid,
   mediaContentKey,
-  expiresInSeconds = 3600,
+  expiresInSeconds = DEFAULT_JWT_EXPIRES_IN_SECONDS,
 }: CreatePlayerJwtParams): Promise<string> {
   const payload = {
     cuid,

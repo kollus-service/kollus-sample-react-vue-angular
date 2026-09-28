@@ -1,3 +1,4 @@
+// 브라우저 서명 JWT로 Kollus 플레이어를 iframe 임베드하고 VG Controller 이벤트를 수신하는 컴포넌트.
 import { useEffect, useRef, useState } from 'react'
 import { createPlayerJwt } from '../utils/kollusJwt'
 

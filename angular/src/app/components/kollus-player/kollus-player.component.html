@@ -1,3 +1,4 @@
+<!-- 플레이어 템플릿: 에러/로딩 상태와 JWT 서명된 Kollus 플레이어 iframe을 렌더링한다 -->
 @if (error) {
   <p class="error-text">{{ error }}</p>
 } @else if (!playerUrl) {
@@ -13,7 +14,7 @@
       allow="encrypted-media; autoplay"
       allowfullscreen
       title="Kollus Player"
-      (load)="onIframeLoad()"
+      (load)="handleIframeLoad()"
     ></iframe>
     <p>재생 상태: <code>{{ playerStatus }}</code></p>
   </div>

@@ -1,3 +1,4 @@
+<!-- 파일 업로더 템플릿: API 접근 토큰·파일 선택 입력과 업로드 진행률/결과를 표시한다 -->
 <div>
   <p class="hint-text">
     API 접근 토큰은 브라우저 메모리에서만 사용되며 저장되지 않습니다(새로고침 시 사라짐).
@@ -9,11 +10,11 @@
     </label>
   </div>
 
-  <input type="file" [disabled]="isUploading" (change)="onFileChange($event)" />
+  <input type="file" [disabled]="isUploading" (change)="handleFileChange($event)" />
   <button
     type="button"
     [disabled]="!selectedFile || !accessToken || isUploading"
-    (click)="onUpload()"
+    (click)="handleUpload()"
   >
     업로드
   </button>

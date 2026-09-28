@@ -1,3 +1,4 @@
+// Kollus VOD API를 직접 호출해 파일 업로드(URL 발급/전송/진행률 조회)를 처리하는 서비스.
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { firstValueFrom } from 'rxjs';
@@ -33,6 +34,8 @@ export class KollusApiService {
    * API 접근 토큰(accessToken)은 인자로만 받아 저장하지 않는다.
    * @param fileName 업로드할 파일명(콘텐츠 제목으로 사용)
    * @param accessToken Kollus API 접근 토큰
+   * @returns 업로드 서버 URL(uploadUrl), 업로드 파일 키(uploadFileKey), 진행률 조회 URL(progressUrl)
+   * @throws {HttpErrorResponse} API 응답 status가 2xx가 아닐 때 (주로 잘못된 access_token)
    */
   async createUploadUrl(
     fileName: string,
@@ -59,6 +62,8 @@ export class KollusApiService {
    * 서버가 거부하므로, preflight가 없는 단순 fetch POST로 전송하고 진행률은 progress_url 폴링으로 표시한다.
    * @param uploadUrl createUploadUrl로 발급받은 업로드 서버 URL
    * @param file 업로드할 파일
+   * @returns 업로드 완료 시 resolve되는 Promise
+   * @throws {Error} 업로드 서버 응답 status가 2xx가 아닐 때
    */
   async uploadFile(uploadUrl: string, file: File): Promise<void> {
     const formData = new FormData();
@@ -75,6 +80,8 @@ export class KollusApiService {
    * createUploadUrl 응답의 progress_url을 그대로 호출해 업로드 진행률을 조회한다.
    * Kollus 진행률 응답의 정확한 필드 스펙이 공개 문서에 없어 방어적으로 파싱한다.
    * @param progressUrl createUploadUrl로 발급받은 진행률 조회 URL
+   * @returns 진행률 (0~100)
+   * @throws {HttpErrorResponse} 진행률 조회 응답 status가 2xx가 아닐 때
    */
   async fetchUploadProgress(progressUrl: string): Promise<number> {
     const response = await firstValueFrom(this.http.get<UploadProgressResponse>(progressUrl));

@@ -15,8 +15,8 @@ const mediaContentKey = ref('')
 // 버튼 클릭 시점의 입력값 스냅샷으로만 플레이어를 렌더링한다.
 const appliedConfig = ref(null)
 
-const canLoadPlayer = computed(
-  () => secretKey.value && customKey.value && cuid.value && mediaContentKey.value,
+const canLoadPlayer = computed(() =>
+  Boolean(secretKey.value && customKey.value && cuid.value && mediaContentKey.value),
 )
 
 function handleLoadPlayer() {

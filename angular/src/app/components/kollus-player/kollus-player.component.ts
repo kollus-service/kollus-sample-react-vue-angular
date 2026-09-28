@@ -1,3 +1,4 @@
+// 브라우저 서명 JWT로 Kollus 플레이어를 iframe 임베드하고 VG Controller 이벤트를 수신하는 컴포넌트.
 import { Component, ElementRef, Input, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { createPlayerJwt } from '../../utils/kollus-jwt';
@@ -61,6 +62,9 @@ export class KollusPlayerComponent implements OnChanges {
 
   constructor(private readonly sanitizer: DomSanitizer) {}
 
+  /**
+   * 입력값(secretKey/customKey/cuid/mediaContentKey)이 바뀔 때마다 JWT를 다시 서명해 플레이어 URL을 재구성한다.
+   */
   ngOnChanges(): void {
     this.buildPlayerUrl();
   }
@@ -86,8 +90,12 @@ export class KollusPlayerComponent implements OnChanges {
     }
   }
 
-  // iframe.src 설정 직후에는 contentWindow가 about:blank 상태라 load 이벤트 이후에 controller를 생성해야 함
-  async onIframeLoad(): Promise<void> {
+  /**
+   * iframe load 핸들러: VG Controller SDK를 로드해 플레이어 재생 이벤트 구독을 시작한다.
+   * iframe.src 설정 직후에는 contentWindow가 about:blank 상태라 load 이벤트 이후에 controller를 생성해야 한다.
+   * @returns 구독 설정이 끝나면 resolve되는 Promise
+   */
+  async handleIframeLoad(): Promise<void> {
     if (!this.iframeRef) return;
 
     try {

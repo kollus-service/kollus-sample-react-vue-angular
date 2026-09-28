@@ -10,6 +10,7 @@ const VOD_API_BASE_URL = 'https://c-api-kr.kollus.com/api'
  * @param {string} fileName - 업로드할 파일명(콘텐츠 제목으로 사용)
  * @param {string} accessToken - Kollus API 접근 토큰
  * @returns {Promise<{ uploadUrl: string, uploadFileKey: string, progressUrl: string }>}
+ * @throws {Error} 응답 status가 2xx가 아닐 때 (주로 잘못된 access_token)
  */
 export async function createUploadUrl(fileName, accessToken) {
   const body = new URLSearchParams({ title: fileName })
@@ -40,6 +41,8 @@ export async function createUploadUrl(fileName, accessToken) {
  * 거부하므로, preflight가 없는 단순 fetch POST로 전송하고 진행률은 progress_url 폴링으로 표시한다.
  * @param {string} uploadUrl - createUploadUrl로 발급받은 업로드 서버 URL
  * @param {File} file - 업로드할 파일
+ * @returns {Promise<void>} 업로드 완료 시 resolve
+ * @throws {Error} 업로드 서버 응답 status가 2xx가 아닐 때
  */
 export async function uploadFile(uploadUrl, file) {
   const formData = new FormData()
@@ -57,6 +60,7 @@ export async function uploadFile(uploadUrl, file) {
  * Kollus 진행률 응답의 정확한 필드 스펙이 공개 문서에 없어 방어적으로 파싱한다.
  * @param {string} progressUrl - createUploadUrl로 발급받은 진행률 조회 URL
  * @returns {Promise<number>} 진행률 (0~100)
+ * @throws {Error} 진행률 조회 응답 status가 2xx가 아닐 때
  */
 export async function fetchUploadProgress(progressUrl) {
   const response = await fetch(progressUrl)

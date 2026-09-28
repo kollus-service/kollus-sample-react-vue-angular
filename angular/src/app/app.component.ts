@@ -1,3 +1,4 @@
+// 루트 컴포넌트: 키 입력 폼과 플레이어 임베드/파일 업로드 섹션으로 데모 페이지를 구성한다.
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KollusPlayerComponent } from './components/kollus-player/kollus-player.component';
@@ -32,11 +33,18 @@ export class AppComponent {
   // 버튼 클릭 시점의 입력값 스냅샷으로만 플레이어를 렌더링한다.
   appliedConfig: PlayerConfig | null = null;
 
+  /**
+   * 플레이어 로드에 필요한 네 가지 입력값이 모두 채워졌는지 여부 (버튼 활성화 조건).
+   * @returns 모든 값이 입력되었으면 true
+   */
   get canLoadPlayer(): boolean {
     return Boolean(this.secretKey && this.customKey && this.cuid && this.mediaContentKey);
   }
 
-  onLoadPlayer(): void {
+  /**
+   * [플레이어 불러오기] 클릭 핸들러: 현재 입력값 스냅샷을 적용해 플레이어를 렌더링한다.
+   */
+  handleLoadPlayer(): void {
     this.appliedConfig = {
       secretKey: this.secretKey,
       customKey: this.customKey,

@@ -1,3 +1,4 @@
+// 루트 컴포넌트: 키 입력 폼과 플레이어 임베드/파일 업로드 섹션으로 데모 페이지를 구성한다.
 import { useState } from 'react'
 import KollusPlayer from './components/KollusPlayer'
 import FileUploader from './components/FileUploader'
@@ -17,7 +18,7 @@ function App() {
   // 버튼 클릭 시점의 입력값 스냅샷으로만 플레이어를 렌더링한다.
   const [appliedConfig, setAppliedConfig] = useState(null)
 
-  const canLoadPlayer = secretKey && customKey && cuid && mediaContentKey
+  const canLoadPlayer = Boolean(secretKey && customKey && cuid && mediaContentKey)
 
   function handleLoadPlayer() {
     setAppliedConfig({ secretKey, customKey, cuid, mediaContentKey })

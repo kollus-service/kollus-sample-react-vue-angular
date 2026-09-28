@@ -1,3 +1,4 @@
+// 파일 선택 → Kollus 업로드 URL 발급 → 직접 전송 → 진행률 폴링을 담당하는 업로드 컴포넌트.
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { KollusApiService } from '../../services/kollus-api.service';
@@ -27,7 +28,11 @@ export class FileUploaderComponent {
 
   constructor(private readonly kollusApi: KollusApiService) {}
 
-  onFileChange(event: Event): void {
+  /**
+   * 파일 input 변경 핸들러: 선택된 파일을 상태에 반영하고 이전 완료/에러 표시를 초기화한다.
+   * @param event 파일 input의 change 이벤트
+   */
+  handleFileChange(event: Event): void {
     const input = event.target as HTMLInputElement;
     this.selectedFile = input.files?.[0] ?? null;
     this.isDone = false;
@@ -53,7 +58,12 @@ export class FileUploaderComponent {
     }
   }
 
-  async onUpload(): Promise<void> {
+  /**
+   * [업로드] 클릭 핸들러: 업로드 URL 발급 → 진행률 폴링 시작 → 파일 전송 순으로 처리한다.
+   * 실패 시 에러 메시지를 상태에 남기고, 성공/실패와 무관하게 폴링을 정리한다.
+   * @returns 업로드 처리가 끝나면 resolve되는 Promise
+   */
+  async handleUpload(): Promise<void> {
     if (!this.selectedFile || !this.accessToken) return;
 
     this.isUploading = true;

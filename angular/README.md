@@ -6,7 +6,7 @@
 
 ## 사전 요구사항
 
-- Node.js `^22.18.0 || >=24.12.0`
+- Node.js 22.18 이상 권장 (최소 요구: `^18.19.1 || ^20.11.1 || >=22.0.0`, Angular CLI 19 기준)
 - Kollus 서비스 계정의 보안 키 / 사용자 키(custom_key) / API 접근 토큰 / 미디어 콘텐츠 키(mckey)
 
 ## 환경 설정
@@ -33,7 +33,11 @@ npm run build    # (= ng build)
 
 ## API 흐름
 
-[루트 README의 API 흐름](../README.md#api-흐름)을 참고하세요.
+**재생**: 폼 입력(보안 키, custom_key, cuid, mckey) → 브라우저에서 JWT 서명(Web Crypto HMAC-SHA256, `src/app/utils/kollus-jwt.ts`) → `https://v.kr.kollus.com/s?jwt=<JWT>&custom_key=<KEY>`를 iframe으로 로드(`src/app/components/kollus-player/`) → iframe load 후 VG Controller SDK 연결 → 재생 이벤트(loaded/ready/play/pause/done/waiting) 수신해 상태 표시.
+
+**업로드**: 폼 입력(access_token) + 파일 선택 → `POST /api/upload/create-url`로 업로드 URL·진행률 URL 발급(`src/app/services/kollus-api.service.ts`) → 발급된 `upload_url`에 파일을 multipart POST(필드명 `upload-file`) → `progress_url`을 2초 간격으로 폴링해 진행률 표시(`src/app/components/file-uploader/`) → 완료.
+
+상세 흐름도와 배경 설명은 [루트 README의 API 흐름](../README.md#api-흐름)을 참고하세요.
 
 ## 관련 문서
 
