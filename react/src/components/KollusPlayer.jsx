@@ -33,9 +33,9 @@ function loadVgControllerScript() {
  * Kollus 플레이어 임베드 컴포넌트.
  * 브라우저에서 직접 서명한 JWT로 S링크 URL을 구성해 iframe으로 재생하고,
  * VG Controller SDK를 통해 재생 상태 이벤트를 수신한다.
- * 보안 키(secretKey)는 상위에서 폼 입력값으로만 전달받으며 저장하지 않는다.
+ * 보안 키(securityKey)는 상위에서 폼 입력값으로만 전달받으며 저장하지 않는다.
  */
-function KollusPlayer({ secretKey, customKey, cuid, mediaContentKey }) {
+function KollusPlayer({ securityKey, customKey, cuid, mediaContentKey }) {
   const iframeRef = useRef(null)
   const [playerUrl, setPlayerUrl] = useState(null)
   const [error, setError] = useState(null)
@@ -48,7 +48,7 @@ function KollusPlayer({ secretKey, customKey, cuid, mediaContentKey }) {
       setPlayerUrl(null)
       setError(null)
       try {
-        const jwt = await createPlayerJwt({ secretKey, cuid, mediaContentKey })
+        const jwt = await createPlayerJwt({ securityKey, cuid, mediaContentKey })
         if (isCancelled) return
         setPlayerUrl(`${PLAYER_GATEWAY_URL}?jwt=${jwt}&custom_key=${encodeURIComponent(customKey)}`)
       } catch (err) {
@@ -62,7 +62,7 @@ function KollusPlayer({ secretKey, customKey, cuid, mediaContentKey }) {
     return () => {
       isCancelled = true
     }
-  }, [secretKey, customKey, cuid, mediaContentKey])
+  }, [securityKey, customKey, cuid, mediaContentKey])
 
   useEffect(() => {
     if (!playerUrl) return
@@ -110,8 +110,10 @@ function KollusPlayer({ secretKey, customKey, cuid, mediaContentKey }) {
         width="640"
         height="360"
         frameBorder="0"
-        allow="encrypted-media; autoplay"
+        allow="encrypted-media; local-network-access"
         allowFullScreen
+        webkitallowfullscreen="true"
+        mozallowfullscreen="true"
         title="Kollus Player"
       />
       <p>재생 상태: <code>{playerStatus}</code></p>

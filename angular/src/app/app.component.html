@@ -10,8 +10,8 @@
   </p>
   <div class="field-group">
     <label>
-      보안 키 (Secret Key)
-      <input type="password" [(ngModel)]="secretKey" autocomplete="off" />
+      보안 키 (Security Key)
+      <input type="password" [(ngModel)]="securityKey" autocomplete="off" />
     </label>
     <label>
       사용자 키 (custom_key)
@@ -31,7 +31,7 @@
   </button>
   @if (appliedConfig) {
     <app-kollus-player
-      [secretKey]="appliedConfig.secretKey"
+      [securityKey]="appliedConfig.securityKey"
       [customKey]="appliedConfig.customKey"
       [cuid]="appliedConfig.cuid"
       [mediaContentKey]="appliedConfig.mediaContentKey"

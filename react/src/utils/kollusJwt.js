@@ -21,14 +21,14 @@ function encodeJwtPart(obj) {
  * 샘플/테스트 용도로 설계된 방식이며, 보안 키를 클라이언트에 두는 것은
  * 실제 서비스에서는 권장되지 않는다(Kollus 공식 가이드도 서버 사이드 발급을 권장).
  * @param {object} params
- * @param {string} params.secretKey - Kollus 보안 키 (서명용, 저장하지 않음)
+ * @param {string} params.securityKey - Kollus 보안 키(Security Key) — HS256 JWT 서명용 secret (저장하지 않음)
  * @param {string} params.cuid - 시청자 ID
  * @param {string} params.mediaContentKey - 미디어 콘텐츠 키(mckey)
  * @param {number} [params.expiresInSeconds] - 만료까지 남은 초 (기본 DEFAULT_JWT_EXPIRES_IN_SECONDS = 1시간)
  * @returns {Promise<string>} 서명된 JWT 문자열
  */
 export async function createPlayerJwt({
-  secretKey,
+  securityKey,
   cuid,
   mediaContentKey,
   expiresInSeconds = DEFAULT_JWT_EXPIRES_IN_SECONDS,
@@ -43,7 +43,7 @@ export async function createPlayerJwt({
 
   const cryptoKey = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(secretKey),
+    new TextEncoder().encode(securityKey),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],

@@ -10,7 +10,7 @@ const DEFAULT_CUID = 'guest'
  * 백엔드 없이 동작하며, JWT는 브라우저에서 폼 입력값으로 직접 서명한다.
  */
 function App() {
-  const [secretKey, setSecretKey] = useState('')
+  const [securityKey, setSecurityKey] = useState('')
   const [customKey, setCustomKey] = useState('')
   const [cuid, setCuid] = useState(DEFAULT_CUID)
   const [mediaContentKey, setMediaContentKey] = useState('')
@@ -18,10 +18,10 @@ function App() {
   // 버튼 클릭 시점의 입력값 스냅샷으로만 플레이어를 렌더링한다.
   const [appliedConfig, setAppliedConfig] = useState(null)
 
-  const canLoadPlayer = Boolean(secretKey && customKey && cuid && mediaContentKey)
+  const canLoadPlayer = Boolean(securityKey && customKey && cuid && mediaContentKey)
 
   function handleLoadPlayer() {
-    setAppliedConfig({ secretKey, customKey, cuid, mediaContentKey })
+    setAppliedConfig({ securityKey, customKey, cuid, mediaContentKey })
   }
 
   return (
@@ -37,11 +37,11 @@ function App() {
         </p>
         <div className="field-group">
           <label>
-            보안 키 (Secret Key)
+            보안 키 (Security Key)
             <input
               type="password"
-              value={secretKey}
-              onChange={(event) => setSecretKey(event.target.value)}
+              value={securityKey}
+              onChange={(event) => setSecurityKey(event.target.value)}
               autoComplete="off"
             />
           </label>
@@ -78,7 +78,7 @@ function App() {
         </button>
         {appliedConfig ? (
           <KollusPlayer
-            secretKey={appliedConfig.secretKey}
+            securityKey={appliedConfig.securityKey}
             customKey={appliedConfig.customKey}
             cuid={appliedConfig.cuid}
             mediaContentKey={appliedConfig.mediaContentKey}

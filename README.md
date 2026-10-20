@@ -21,7 +21,7 @@ kollus-sample-react-vue-angular/
 
 - **Node.js 22.18 이상 권장** — 세 프로젝트의 요구 버전을 공통으로 만족하는 버전입니다.
 - Kollus 서비스 계정 정보 — VOD 콘솔의 [서비스 계정] 메뉴에서 확인할 수 있습니다.
-  - 보안 키 (Secret Key)
+  - 보안 키 (Security Key)
   - 사용자 키 (custom_key)
   - API 접근 토큰 (access_token)
   - 재생할 콘텐츠의 미디어 콘텐츠 키 (mckey)
@@ -123,7 +123,7 @@ Angular는 `src/app/utils/kollus-jwt.ts`, `src/app/services/kollus-api.service.t
 https://v.kr.kollus.com/s?jwt=<JWT>&custom_key=<CUSTOM_KEY>
 ```
 
-JWT payload는 Kollus 표준 규격(`cuid`, `expt`, `mc: [{ mckey }]`)을 따르며, 화면 폼에 입력한 보안 키로 서명합니다. iframe에는 DRM 콘텐츠 재생에 필요한 `allow="encrypted-media; autoplay"` 권한을 부여합니다.
+JWT payload는 Kollus 표준 규격(`cuid`, `expt`, `mc: [{ mckey }]`)을 따르며, 화면 폼에 입력한 보안 키로 서명합니다. iframe에는 `allow="encrypted-media; local-network-access"`와 전체 화면용 `allowfullscreen`·`webkitallowfullscreen`·`mozallowfullscreen` 속성을 부여합니다. `local-network-access`는 Chrome 142 이상에서 Kollus DRM 콘텐츠를 iframe으로 재생할 때 필수이고, `encrypted-media`는 iframe 안에서 Widevine·PlayReady·FairPlay 등 브라우저 DRM을 사용할 때 필요합니다.
 
 iframe이 로드되면 Kollus **VG Controller SDK**(`vg-controller-client.latest.min.js`)로 플레이어와 연결해 재생 라이프사이클 이벤트(`loaded` / `ready` / `play` / `pause` / `done` / `waiting`)를 구독하고, 현재 재생 상태를 화면에 표시합니다.
 

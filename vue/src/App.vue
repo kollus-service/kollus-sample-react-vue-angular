@@ -7,7 +7,7 @@ import FileUploader from './components/FileUploader.vue'
 
 const DEFAULT_CUID = 'guest'
 
-const secretKey = ref('')
+const securityKey = ref('')
 const customKey = ref('')
 const cuid = ref(DEFAULT_CUID)
 const mediaContentKey = ref('')
@@ -16,12 +16,12 @@ const mediaContentKey = ref('')
 const appliedConfig = ref(null)
 
 const canLoadPlayer = computed(() =>
-  Boolean(secretKey.value && customKey.value && cuid.value && mediaContentKey.value),
+  Boolean(securityKey.value && customKey.value && cuid.value && mediaContentKey.value),
 )
 
 function handleLoadPlayer() {
   appliedConfig.value = {
-    secretKey: secretKey.value,
+    securityKey: securityKey.value,
     customKey: customKey.value,
     cuid: cuid.value,
     mediaContentKey: mediaContentKey.value,
@@ -41,8 +41,8 @@ function handleLoadPlayer() {
     </p>
     <div class="field-group">
       <label>
-        보안 키 (Secret Key)
-        <input type="password" v-model="secretKey" autocomplete="off" />
+        보안 키 (Security Key)
+        <input type="password" v-model="securityKey" autocomplete="off" />
       </label>
       <label>
         사용자 키 (custom_key)
@@ -62,7 +62,7 @@ function handleLoadPlayer() {
     </button>
     <KollusPlayer
       v-if="appliedConfig"
-      :secret-key="appliedConfig.secretKey"
+      :security-key="appliedConfig.securityKey"
       :custom-key="appliedConfig.customKey"
       :cuid="appliedConfig.cuid"
       :media-content-key="appliedConfig.mediaContentKey"

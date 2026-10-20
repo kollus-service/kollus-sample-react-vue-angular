@@ -5,7 +5,7 @@ import { ref, watch } from 'vue'
 import { createPlayerJwt } from '../utils/kollusJwt'
 
 const props = defineProps({
-  secretKey: { type: String, required: true },
+  securityKey: { type: String, required: true },
   customKey: { type: String, required: true },
   cuid: { type: String, required: true },
   mediaContentKey: { type: String, required: true },
@@ -49,7 +49,7 @@ async function buildPlayerUrl() {
 
   try {
     const jwt = await createPlayerJwt({
-      secretKey: props.secretKey,
+      securityKey: props.securityKey,
       cuid: props.cuid,
       mediaContentKey: props.mediaContentKey,
     })
@@ -78,7 +78,7 @@ async function handleIframeLoad() {
 }
 
 watch(
-  () => [props.secretKey, props.customKey, props.cuid, props.mediaContentKey],
+  () => [props.securityKey, props.customKey, props.cuid, props.mediaContentKey],
   buildPlayerUrl,
   { immediate: true },
 )
@@ -94,8 +94,10 @@ watch(
       width="640"
       height="360"
       frameborder="0"
-      allow="encrypted-media; autoplay"
+      allow="encrypted-media; local-network-access"
       allowfullscreen
+      webkitallowfullscreen
+      mozallowfullscreen
       title="Kollus Player"
       @load="handleIframeLoad"
     ></iframe>

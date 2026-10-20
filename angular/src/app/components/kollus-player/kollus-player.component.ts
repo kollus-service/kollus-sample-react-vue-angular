@@ -42,7 +42,7 @@ function loadVgControllerScript(): Promise<Window['VgControllerClient']> {
  * Kollus 플레이어 임베드 컴포넌트.
  * 브라우저에서 직접 서명한 JWT로 S링크 URL을 구성해 iframe으로 재생하고,
  * VG Controller SDK를 통해 재생 상태 이벤트를 수신한다.
- * 보안 키(secretKey)는 상위에서 폼 입력값으로만 전달받으며 저장하지 않는다.
+ * 보안 키(securityKey)는 상위에서 폼 입력값으로만 전달받으며 저장하지 않는다.
  */
 @Component({
   selector: 'app-kollus-player',
@@ -50,7 +50,7 @@ function loadVgControllerScript(): Promise<Window['VgControllerClient']> {
   templateUrl: './kollus-player.component.html',
 })
 export class KollusPlayerComponent implements OnChanges {
-  @Input({ required: true }) secretKey!: string;
+  @Input({ required: true }) securityKey!: string;
   @Input({ required: true }) customKey!: string;
   @Input({ required: true }) cuid!: string;
   @Input({ required: true }) mediaContentKey!: string;
@@ -63,7 +63,7 @@ export class KollusPlayerComponent implements OnChanges {
   constructor(private readonly sanitizer: DomSanitizer) {}
 
   /**
-   * 입력값(secretKey/customKey/cuid/mediaContentKey)이 바뀔 때마다 JWT를 다시 서명해 플레이어 URL을 재구성한다.
+   * 입력값(securityKey/customKey/cuid/mediaContentKey)이 바뀔 때마다 JWT를 다시 서명해 플레이어 URL을 재구성한다.
    */
   ngOnChanges(): void {
     this.buildPlayerUrl();
@@ -75,7 +75,7 @@ export class KollusPlayerComponent implements OnChanges {
 
     try {
       const jwt = await createPlayerJwt({
-        secretKey: this.secretKey,
+        securityKey: this.securityKey,
         cuid: this.cuid,
         mediaContentKey: this.mediaContentKey,
       });

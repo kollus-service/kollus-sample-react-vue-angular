@@ -7,7 +7,7 @@ import { FileUploaderComponent } from './components/file-uploader/file-uploader.
 const DEFAULT_CUID = 'guest';
 
 interface PlayerConfig {
-  secretKey: string;
+  securityKey: string;
   customKey: string;
   cuid: string;
   mediaContentKey: string;
@@ -25,7 +25,7 @@ interface PlayerConfig {
   styleUrl: './app.component.css',
 })
 export class AppComponent {
-  secretKey = '';
+  securityKey = '';
   customKey = '';
   cuid = DEFAULT_CUID;
   mediaContentKey = '';
@@ -38,7 +38,7 @@ export class AppComponent {
    * @returns 모든 값이 입력되었으면 true
    */
   get canLoadPlayer(): boolean {
-    return Boolean(this.secretKey && this.customKey && this.cuid && this.mediaContentKey);
+    return Boolean(this.securityKey && this.customKey && this.cuid && this.mediaContentKey);
   }
 
   /**
@@ -46,7 +46,7 @@ export class AppComponent {
    */
   handleLoadPlayer(): void {
     this.appliedConfig = {
-      secretKey: this.secretKey,
+      securityKey: this.securityKey,
       customKey: this.customKey,
       cuid: this.cuid,
       mediaContentKey: this.mediaContentKey,
